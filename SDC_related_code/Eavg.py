@@ -36,6 +36,7 @@ for sample_number in Eavg:
     Y.append(sample_loc_dict[sample_number][1])
     Ea.append(Eavg[sample_number])
 
+plt.figure(figsize=(16,10))
 sc = plt.scatter(X, Y, c=Ea, s=35, marker='s', cmap='RdYlBu')
 plt.colorbar(sc, label='E_avg (V)')
 plt.tick_params(axis='both',          

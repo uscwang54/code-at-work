@@ -1,22 +1,19 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Feb 11 14:14:12 2019
+Created on Tue Feb 26 17:31:46 2019
 
 @author: eche
 """
 
 from collections import defaultdict
-import numpy as np
 import matplotlib.pyplot as plt
 from Plate_Map import plate_map
 from Plate_Sample_File import plate_sample_techfile
 
 sample_loc_dict = plate_map(69) # needs to be updated  {sample_number:(x,y)}
-sample_techfile_dict = plate_sample_techfile(5146, 69, 'CA5') # needs to be updated 
-avg_time = 2 # needs to be updated (seconds from the end)
-dt = 0.1 # time interval between two voltages
+sample_techfile_dict = plate_sample_techfile(5146, 69, 'CV2') # needs to be updated 
 
-I = defaultdict(list) # E = {sample number : [I(A)]}
+I = defaultdict(list) # I = {sample number : [I(A)]}
 for sample_number, techfile in sample_techfile_dict.items():    
     with open(techfile) as f:
         data = []
@@ -28,17 +25,17 @@ for sample_number, techfile in sample_techfile_dict.items():
                 continue
     for line in data:
         I[sample_number].append(float(line.split('\t')[-2])) 
-Iavg = {sample_number:np.mean(I_list[-int(avg_time/dt):]) for sample_number, I_list in I.items()} # Iavg = {sample number: Iavg(A)}
+Imin = {sample_number:np.max(I_list) for sample_number, I_list in I.items()} # Imin = {sample number: Imin(A)}
 
-X,Y,Ia = [],[],[]
-for sample_number in Iavg:
+X,Y,Im = [],[],[]
+for sample_number in Imin:
     X.append(sample_loc_dict[sample_number][0])
     Y.append(sample_loc_dict[sample_number][1])
-    Ia.append(Iavg[sample_number])
+    Im.append(Imin[sample_number])
 
 plt.figure(figsize=(16,10))
-sc = plt.scatter(X, Y, s=35, c=Ia, marker='s', cmap='RdYlBu')
-plt.colorbar(sc, label='I_avg (A)')
+sc = plt.scatter(X, Y, c=Im, s=35, marker='s', cmap='RdYlBu')
+plt.colorbar(sc, label='I_max (A)')
 plt.tick_params(axis='both',          
     which='both',      
     bottom=False,     
