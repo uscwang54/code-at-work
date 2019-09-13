@@ -2,7 +2,7 @@
 """
 Created on Mon Feb 11 10:44:52 2019
 
-@author: Yu
+@author: Yu Wang
 """
 
 import os
@@ -12,10 +12,16 @@ import pandas as pd
 from collections import defaultdict
 
 
-def plate_sample_techfile(plate_id, plate_map, echem_tech):
+def plate_sample_techfile(plate_id, plate_map, echem_tech, scan_type):
     '''
-    input: plate_id (number 4 digit), plate_map (number 2 digit), echem_tech (string, e.g. CV2)
-    output: a dictionary which is able to trace the echem techfile of specified sample number from a specified plate
+    map plate_id --> sample number --> techfile, i.e. given plate_id and sample number, retrieve the
+    most recent techfile
+    
+    input: plate_id (int: 4 digit), 
+           plate_map (int: 2 digit), 
+           echem_tech (string:, e.g. 'CV2'),
+           scan_type (string: 'pre' or 'post').
+    output: a dictionary which is able to trace the techfile of specified sample number from a specified plate
     '''
     
     plate_map_file_path = glob(r"J:\hte_jcap_app_proto\map\00{}*mp.txt".format(plate_map))[0]
@@ -24,8 +30,12 @@ def plate_sample_techfile(plate_id, plate_map, echem_tech):
     unique_sample_numbers = plate_map.index.values 
     
     #grab all techfiles in the sub_folders
-    plate_folder_path = glob("C:\INST\RUNS\*{}*".format(str(plate_id)))[0]
-    techfile_paths = glob(os.path.join(plate_folder_path, '*\*{}.txt*'.format(echem_tech))) 
+    if scan_type=='pre':
+        plate_folder_path = glob("C:\INST\RUNS\*_*_{}*".format(str(plate_id)))[0]
+        techfile_paths = glob(os.path.join(plate_folder_path, '*\*{}*'.format(echem_tech)))
+    elif scan_type=='post':
+        plate_folder_path = glob("C:\INST\RUNS\*_*postPETS*_{}*".format(str(plate_id)))[0]
+        techfile_paths = glob(os.path.join(plate_folder_path, '*\*{}*'.format(echem_tech)))
     
     # {sample number : [techfile_paths (could be more than one)]} 
     sample_techfile_dict = defaultdict(list)
@@ -35,7 +45,7 @@ def plate_sample_techfile(plate_id, plate_map, echem_tech):
             if sample_number==unique_sample_number:
                 sample_techfile_dict[unique_sample_number].append(techfile_path) 
 
-    # select only the most recent techfiles per each unique sample number
+    # select only the most recent techfile per each unique sample number
     for sample_number, techfile_list in sample_techfile_dict.items():
         if len(techfile_list) > 1:
             sample_ctimes = [os.path.getctime(techfile) for techfile in techfile_list]
