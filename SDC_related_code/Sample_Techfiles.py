@@ -56,7 +56,7 @@ def sample_techfiles_from_plate(plate_id):
         if len(techfiles)==num_echem_params:
             continue
         else:
-            techfiles = techfiles[-num_echem_params:] # the most recent techfiles 
-    
+            sample_techfiles[sample_id] = techfiles[-num_echem_params:] # the most recent techfiles 
+               
     return sample_techfiles
 
